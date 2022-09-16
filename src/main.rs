@@ -11,5 +11,10 @@ struct Cli {
 }
 
 fn main() {
-    let _cli = Cli::parse();
+    let cli = Cli::parse();
+
+    match &cli.subcommand {
+        Command::Add(_) => cmds::install::action(),
+        Command::Install(_) => cmds::install::action(),
+    }
 }
