@@ -17,11 +17,12 @@ async fn install_dep(
 ) {
     let target_hash = &pollapo_yml.root.lock[dep];
     let repo_name = dep.split("@").collect::<Vec<&str>>()[0];
-    let zipball_url = format!("https://github.com/{}/ziball/{}", repo_name, target_hash);
+    let zipball_url = format!("https://github.com/{}/zipball/{}", repo_name, target_hash);
     let response = reqwest::get(&zipball_url).await
         .unwrap_or_else(|err| {
             panic!("Failed to fetch {}: {}", &zipball_url, err);
         });
+
     let mut content = std::io::Cursor::new(response.bytes().await.unwrap_or_else(|err| {
         panic!("Failed to convert {} into bytes: {}", &zipball_url, err);
     }));
