@@ -72,6 +72,8 @@ mod tests {
             std::fs::read_dir("./cache_test/pbkit").unwrap()
                 .map(|entry| entry.unwrap().path()).collect::<Vec<PathBuf>>()
                 .contains(&std::path::PathBuf::from("./cache_test/pbkit/interface-pingpong-server@main.zip"))
-        )
+        );
+
+        std::fs::remove_file("./cache_test/pbkit/interface-pingpong-server@main.zip").unwrap();
     }
 }
