@@ -1,5 +1,5 @@
 [package]
-name = "pollapo-rust"
+name = "pollapo"
 version = "0.0.2"
 edition = "2021"
 description = "pollapo rust impelmentation"
