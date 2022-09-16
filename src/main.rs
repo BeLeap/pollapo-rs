@@ -1,3 +1,9 @@
+use clap::Parser;
+
+#[derive(Parser, Debug)]
+#[clap(version, about)]
+struct Cli {}
+
 fn main() {
-    println!("Hello, world!");
+    let _cli = Cli::parse();
 }
