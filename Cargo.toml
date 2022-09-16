@@ -9,5 +9,9 @@ license = "MIT"
 
 [dependencies]
 clap = { version = "3.2.21", features = ["derive"] }
+reqwest = "0.11.11"
 serde = { version = "1.0.144", features = ["derive"] }
 serde_yaml = "0.9.13"
+
+[dev-dependencies]
+tokio-test = "*"
