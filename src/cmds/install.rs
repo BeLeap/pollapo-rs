@@ -53,14 +53,43 @@ async fn install_dep_to_cache(
 
 #[cfg(test)]
 mod tests {
-    use serial_test::serial;
+    use serial_test::file_serial;
 
     use crate::pollapo_yml::load_pollapo_yml;
     use super::install_dep_to_cache;
 
     #[test]
-    #[serial]
+    #[file_serial(key, "cache_test/pbkit/interface-pingpong-server@main.zip")]
     fn install_dep_to_cache_should_store_dep_zip_to_cache() {
+        // given
+        let pollapo_yml = load_pollapo_yml(Some("pollapo.test.yml"));
+
+        // when
+        let path = tokio_test::block_on(
+            install_dep_to_cache(
+                &pollapo_yml,
+                "pbkit/interface-pingpong-server@main", 
+                Some("cache_test"),
+            )
+        );
+
+        // then
+        let expected_path = std::path::PathBuf::from("cache_test/pbkit/interface-pingpong-server@main.zip");
+        assert_eq!(path, expected_path);
+        assert!(
+            std::fs::read_dir("./cache_test/pbkit").unwrap()
+                .map(|entry| entry.unwrap().path())
+                .fold(false, |acc, entry| acc || entry.to_string_lossy().contains("pbkit/interface-pingpong-server@main"))
+        );
+
+        // clean
+        std::fs::remove_file("./cache_test/pbkit/interface-pingpong-server@main.zip").unwrap();
+    }
+
+    #[test]
+    #[file_serial(key, "cache_test/pbkit/interface-pingpong-server@main.zip")]
+    fn extract_cache_should_extract_from_cache_to_target() {
+        // given
         let pollapo_yml = load_pollapo_yml(Some("pollapo.test.yml"));
         let path = tokio_test::block_on(
             install_dep_to_cache(
@@ -70,19 +99,17 @@ mod tests {
             )
         );
 
-        let expected_path = std::path::PathBuf::from("cache_test/pbkit/interface-pingpong-server@main.zip");
-        assert_eq!(path, expected_path);
+        // when
+        extract_cache(path, Some(".pollapo"));
+
+        // then
         assert!(
-            std::fs::read_dir("./cache_test/pbkit").unwrap()
-                .map(|entry| entry.unwrap().path())
-                .fold(false, |acc, entry| acc || entry.to_string_lossy().contains("pbkit/interface-pingpong-server@main"))
+            std::fs::read_dir("./.pollapo/pbkit/interface-pingpong-server").unwrap()
+                .map(|e| e.unwrap().path())
+                .fold(false, |acc, entry| acc || entry.to_string_lossy().contains("pingpong.proto"))
         );
 
+        // clean
         std::fs::remove_file("./cache_test/pbkit/interface-pingpong-server@main.zip").unwrap();
-    }
-
-    #[test]
-    #[serial]
-    fn extract_cache_should_extract_from_target() {
     }
 }
