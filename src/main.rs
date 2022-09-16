@@ -2,6 +2,7 @@ use clap::Parser;
 use cmds::Command;
 
 mod cmds;
+mod pollapo_yml;
 
 #[derive(Parser, Debug)]
 #[clap(version, about)]
