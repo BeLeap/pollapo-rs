@@ -53,10 +53,13 @@ async fn install_dep_to_cache(
 
 #[cfg(test)]
 mod tests {
+    use serial_test::serial;
+
     use crate::pollapo_yml::load_pollapo_yml;
     use super::install_dep_to_cache;
 
     #[test]
+    #[serial]
     fn install_dep_to_cache_should_store_dep_zip_to_cache() {
         let pollapo_yml = load_pollapo_yml(Some("pollapo.test.yml"));
         let path = tokio_test::block_on(
@@ -76,5 +79,10 @@ mod tests {
         );
 
         std::fs::remove_file("./cache_test/pbkit/interface-pingpong-server@main.zip").unwrap();
+    }
+
+    #[test]
+    #[serial]
+    fn extract_cache_should_extract_from_target() {
     }
 }
