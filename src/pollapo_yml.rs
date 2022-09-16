@@ -3,7 +3,8 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct PollapoYml {
-    root: PollapoRoot
+    deps: Vec<String>,
+    root: PollapoRoot,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
