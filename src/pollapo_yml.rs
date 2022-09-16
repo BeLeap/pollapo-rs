@@ -3,13 +3,13 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct PollapoYml {
-    deps: Vec<String>,
-    root: PollapoRoot,
+    pub deps: Vec<String>,
+    pub root: PollapoRoot,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct PollapoRoot {
-    lock: BTreeMap<String, String>
+    pub lock: BTreeMap<String, String>
 }
 
 pub fn load_pollapo_yml(pollapo_yml_path: Option<&str>) -> PollapoYml {
