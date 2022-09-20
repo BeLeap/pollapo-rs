@@ -3,6 +3,7 @@ use cmds::Command;
 
 mod cmds;
 mod pollapo_yml;
+mod utils;
 
 #[derive(Parser, Debug)]
 #[clap(version, about)]
