@@ -1,5 +1,5 @@
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-use serde::{Serialize, Deserialize};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct PollapoYml {
@@ -9,7 +9,7 @@ pub struct PollapoYml {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct PollapoRoot {
-    pub lock: BTreeMap<String, String>
+    pub lock: BTreeMap<String, String>,
 }
 
 pub fn load_pollapo_yml(pollapo_yml_path: Option<&str>) -> PollapoYml {
@@ -17,14 +17,12 @@ pub fn load_pollapo_yml(pollapo_yml_path: Option<&str>) -> PollapoYml {
         Some(path) => path,
         None => "pollapo.yml",
     };
-    let pollapo_yml_content = std::fs::read_to_string(pollapo_yml_path)
-        .unwrap_or_else(|err| {
-            panic!("Failed to read file {}: {}", pollapo_yml_path, err);
-        });
-    let pollapo_yml = serde_yaml::from_str(&pollapo_yml_content)
-        .unwrap_or_else(|err| {
-            panic!("Malfored {}: {}", pollapo_yml_path, err);
-        });
+    let pollapo_yml_content = std::fs::read_to_string(pollapo_yml_path).unwrap_or_else(|err| {
+        panic!("Failed to read file {}: {}", pollapo_yml_path, err);
+    });
+    let pollapo_yml = serde_yaml::from_str(&pollapo_yml_content).unwrap_or_else(|err| {
+        panic!("Malfored {}: {}", pollapo_yml_path, err);
+    });
 
     pollapo_yml
 }
@@ -36,7 +34,10 @@ mod tests {
     #[test]
     fn load_pollapo_yml_should_load_root_lock() {
         let pollapo_yml = load_pollapo_yml(Some("pollapo.test.yml"));
-        assert_eq!(pollapo_yml.root.lock["pbkit/interface-pingpong-server@main"], "58425678c6284305dd09130075cecb54a3a3d32c");
+        assert_eq!(
+            pollapo_yml.root.lock["pbkit/interface-pingpong-server@main"],
+            "58425678c6284305dd09130075cecb54a3a3d32c"
+        );
     }
 
     #[test]
