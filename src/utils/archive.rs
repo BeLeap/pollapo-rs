@@ -9,7 +9,14 @@ pub fn strip<P: AsRef<Path>>(filepath: P, depth: usize) -> PathBuf {
     let filepath = filepath.as_ref();
     let parent_to_strip = get_parent_by_depth(filepath, depth);
 
-    filepath.strip_prefix(parent_to_strip.iter().fold(PathBuf::new(), |acc, elem| acc.join(elem))).unwrap().to_path_buf()
+    filepath
+        .strip_prefix(
+            parent_to_strip
+                .iter()
+                .fold(PathBuf::new(), |acc, elem| acc.join(elem)),
+        )
+        .unwrap()
+        .to_path_buf()
 }
 
 #[cfg(test)]
