@@ -120,7 +120,6 @@ mod tests {
     use crate::{cmds::install::extract_cache, pollapo_yml::load_pollapo_yml};
 
     #[test]
-    #[ignore]
     #[file_serial(key, "cache_test/pbkit/interface-pingpong-server@main.zip")]
     fn extract_cache_should_extract_from_cache_to_target() {
         // given
