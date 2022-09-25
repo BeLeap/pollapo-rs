@@ -56,7 +56,7 @@ async fn install_dep_to_cache(
     file_path.to_path_buf()
 }
 
-fn extract_cache(path: &std::path::PathBuf, target_dir: Option<&str>) {
+fn extract_cache(path: &std::path::PathBuf, dep: &str, target_dir: Option<&str>) {
     let target_dir_raw = match target_dir {
         Some(dir) => dir,
         None => "~/.config/pollapo/cache",
@@ -65,6 +65,8 @@ fn extract_cache(path: &std::path::PathBuf, target_dir: Option<&str>) {
         panic!("Failed to resolve {}: {}", target_dir_raw, err);
     });
     let target_dir = std::path::Path::new(&*target_dir_str);
+    let repo_name = dep.split("@").collect::<Vec<&str>>()[0];
+    let target_dir = target_dir.join(repo_name);
 
     let zipball_file = std::fs::read(path).unwrap_or_else(|err| {
         panic!("Failed to open {}: {}", path.to_string_lossy(), err);
@@ -81,7 +83,7 @@ fn extract_cache(path: &std::path::PathBuf, target_dir: Option<&str>) {
         );
     });
     zip_tree.files().for_each(|entry| {
-        let full_path = target_dir.join(strip(&*entry.path, 1));
+        let full_path = target_dir.join(strip(&*entry.path, 2));
 
         if let Some(parent) = full_path.parent() {
             std::fs::create_dir_all(parent).unwrap_or_else(|err| {
@@ -131,7 +133,11 @@ mod tests {
         ));
 
         // when
-        extract_cache(&path, Some(".pollapo"));
+        extract_cache(
+            &path,
+            "pbkit/interface-pingpong-server@main",
+            Some(".pollapo"),
+        );
 
         // then
         assert!(
