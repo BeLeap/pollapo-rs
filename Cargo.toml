@@ -11,7 +11,7 @@ license = "MIT"
 async_zip = "0.0.8"
 clap = { version = "4.0.8", features = ["derive"] }
 piz = "0.5.1"
-reqwest = "0.11.11"
+reqwest = "0.11.12"
 serde = { version = "1.0.145", features = ["derive"] }
 serde_yaml = "0.9.13"
 shellexpand = "2.1.2"
