@@ -46,3 +46,14 @@ mod tests {
         assert_eq!(pollapo_yml.deps[0], "pbkit/interface-pingpong-server@main");
     }
 }
+
+pub fn parse_dep(dep: &str) -> (&str, &str, &str) {
+    let userrepo_ref = dep.split("@").collect::<Vec<&str>>();
+    let userrepo = userrepo_ref[0];
+    let dep_ref = userrepo_ref[1];
+    let user_repo = userrepo.split("/").collect::<Vec<&str>>();
+    let user = user_repo[0];
+    let repo = user_repo[1];
+
+    (user, repo, dep_ref)
+}

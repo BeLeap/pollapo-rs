@@ -1,7 +1,7 @@
 use clap::Parser;
 use piz::read::*;
 
-use crate::{pollapo_yml::PollapoYml, utils::archive::strip};
+use crate::{pollapo_yml::{PollapoYml, parse_dep}, utils::archive::strip};
 
 #[derive(Parser, Debug)]
 #[clap(about = "Install dependencies")]
@@ -17,15 +17,7 @@ async fn install_dep_to_cache(
     cache_dir: Option<&str>,
 ) -> std::path::PathBuf {
     let target_hash = &pollapo_yml.root.lock[dep];
-    let repo_name = dep.split("@").collect::<Vec<&str>>()[0];
-    let zipball_url = format!("https://github.com/{}/zipball/{}", repo_name, target_hash);
-    let response = reqwest::get(&zipball_url).await.unwrap_or_else(|err| {
-        panic!("Failed to fetch {}: {}", &zipball_url, err);
-    });
-
-    let mut content = std::io::Cursor::new(response.bytes().await.unwrap_or_else(|err| {
-        panic!("Failed to convert {} into bytes: {}", &zipball_url, err);
-    }));
+    let (user, repo, target_ref) = parse_dep(dep);
 
     let cache_dir_raw = match cache_dir {
         Some(dir) => dir,
@@ -34,26 +26,50 @@ async fn install_dep_to_cache(
     let cache_dir = shellexpand::full(cache_dir_raw).unwrap_or_else(|err| {
         panic!("Failed to resolve {}: {}", cache_dir_raw, err);
     });
-    let file_name = format!("{}/{}@{}.{}", cache_dir, repo_name, target_hash, "zip");
-    let file_path = std::path::Path::new(&file_name);
-    let file_parent = file_path.parent().unwrap();
-    std::fs::create_dir_all(&file_parent).unwrap_or_else(|err| {
-        panic!(
-            "Failed to create parent {} of {}: {}",
-            &file_parent.to_string_lossy(),
-            &file_name,
-            err
-        );
-    });
-    let mut target_file = std::fs::File::create(&file_name).unwrap_or_else(|err| {
-        panic!("Failed to create {}: {}", &file_name, err);
-    });
+    let target_cache_dir = format!("{}/{}", cache_dir, user);
+    let target_ref_file_path = format!("{}/{}@{}.{}", target_cache_dir, repo, target_ref, "zip");
 
-    std::io::copy(&mut content, &mut target_file).unwrap_or_else(|err| {
-        panic!("Failed to copy {} to {}: {}", zipball_url, file_name, err);
-    });
+    if std::path::Path::new(&target_ref_file_path).exists() {
+        std::path::PathBuf::from(target_ref_file_path)
+    } else {
+        // Fetch zipball
+        let zipball_url = format!("https://github.com/{}/{}/zipball/{}", user, repo, target_hash);
+        let response = reqwest::get(&zipball_url).await.unwrap_or_else(|err| {
+            panic!("Failed to fetch {}: {}", &zipball_url, err);
+        });
 
-    file_path.to_path_buf()
+        // Create file
+        let mut content = std::io::Cursor::new(response.bytes().await.unwrap_or_else(|err| {
+            panic!("Failed to convert {} into bytes: {}", &zipball_url, err);
+        }));
+
+        let file_name = format!("{}@{}.{}", repo, target_hash, "zip");
+        let file_name_str = format!("{}/{}", target_cache_dir, file_name);
+        let file_path = std::path::Path::new(&file_name_str);
+        let file_parent = file_path.parent().unwrap();
+        std::fs::create_dir_all(&file_parent).unwrap_or_else(|err| {
+            panic!(
+                "Failed to create parent {} of {}: {}",
+                &file_parent.to_string_lossy(),
+                &file_name_str,
+                err
+            );
+        });
+        let mut target_file = std::fs::File::create(&file_name_str).unwrap_or_else(|err| {
+            panic!("Failed to create {}: {}", &file_name_str, err);
+        });
+
+        std::io::copy(&mut content, &mut target_file).unwrap_or_else(|err| {
+            panic!("Failed to copy {} to {}: {}", zipball_url, file_name_str, err);
+        });
+
+        // Create symbolic link
+        std::os::unix::fs::symlink(&file_name, &target_ref_file_path).unwrap_or_else(|err| {
+            panic!("Failed to create symbolic link {} to {}: {}", &file_path.to_string_lossy(), &target_ref_file_path, err);
+        });
+
+        file_path.to_path_buf()
+    }
 }
 
 fn extract_cache(path: &std::path::PathBuf, dep: &str, target_dir: Option<&str>) {
