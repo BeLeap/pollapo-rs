@@ -5,7 +5,16 @@ use crate::{pollapo_yml::{PollapoYml, parse_dep}, utils::archive::strip};
 
 #[derive(Parser, Debug)]
 #[clap(about = "Install dependencies")]
-pub struct InstallArgs {}
+pub struct InstallArgs {
+    #[clap(short, long, default_value = "pollapo.yml")]
+    config: String,
+
+    #[clap(short, long)]
+    token: String,
+
+    #[clap(short, long)]
+    outdir: String,
+}
 
 pub fn action() {
     todo!()
