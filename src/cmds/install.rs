@@ -7,17 +7,19 @@ use crate::{pollapo_yml::{PollapoYml, parse_dep}, utils::archive::strip};
 #[clap(about = "Install dependencies")]
 pub struct InstallArgs {
     #[clap(short, long, default_value = "pollapo.yml")]
-    config: String,
+    pub config: String,
 
     #[clap(short, long)]
-    token: String,
+    pub token: String,
 
-    #[clap(short, long)]
-    outdir: String,
+    #[clap(short, long, default_value = ".pollapo")]
+    pub outdir: String,
 }
 
-pub fn action() {
-    todo!()
+pub fn action(config: &str, token: &str, outdir: &str) {
+    println!("config: {:?}", config);
+    println!("token: {:?}", token);
+    println!("outdir: {:?}", outdir);
 }
 
 async fn install_dep_to_cache(

@@ -16,6 +16,6 @@ fn main() {
     let cli = Cli::parse();
 
     match &cli.subcommand {
-        Command::Install(_) => cmds::install::action(),
+        Command::Install(args) => cmds::install::action(&args.config, &args.token, &args.outdir),
     }
 }
