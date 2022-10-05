@@ -16,7 +16,6 @@ fn main() {
     let cli = Cli::parse();
 
     match &cli.subcommand {
-        Command::Add(_) => cmds::add::action(),
         Command::Install(_) => cmds::install::action(),
     }
 }
