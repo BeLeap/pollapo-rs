@@ -1,7 +1,8 @@
 use clap::Parser;
+use futures::future::join_all;
 use piz::read::*;
 
-use crate::{pollapo_yml::{PollapoYml, parse_dep}, utils::archive::strip};
+use crate::{pollapo_yml::{PollapoYml, parse_dep, load_pollapo_yml}, utils::archive::strip};
 
 #[derive(Parser, Debug)]
 #[clap(about = "Install dependencies")]
@@ -14,28 +15,56 @@ pub struct InstallArgs {
 
     #[clap(short, long, default_value = ".pollapo")]
     pub outdir: String,
+
+    #[clap(short, long, default_value = "~/.config/pollapo/cache")]
+    pub cache_dir: String,
 }
 
-pub fn action(config: &str, token: &str, outdir: &str) {
+pub async fn action(config: &str, token: &str, outdir: &str, cache_dir: &str) {
     println!("config: {:?}", config);
     println!("token: {:?}", token);
     println!("outdir: {:?}", outdir);
+
+    let pollapo_yml = load_pollapo_yml(config);
+    let cache_dir_futures = pollapo_yml.deps.iter()
+        .map(|dep| install_dep_to_cache(&pollapo_yml, &dep, &cache_dir));
+    let cache_dirs = join_all(cache_dir_futures).await;
+    let recursive_deps = cache_dirs.iter().map(|cache_dir| {
+        let zipball_file = std::fs::read(cache_dir).unwrap_or_else(|err| {
+            panic!("Failed to open {}: {}", cache_dir.to_string_lossy(), err);
+        });
+        let zipball = piz::ZipArchive::new(&zipball_file).unwrap_or_else(|err| {
+            panic!("Malformed zipball {}: {}", cache_dir.to_string_lossy(), err);
+        });
+        let zip_tree = as_tree(zipball.entries()).unwrap_or_else(|err| {
+            panic!(
+                "Malfored zipball converting {}: {}",
+                cache_dir.to_string_lossy(),
+                err
+            );
+        });
+    });
+
+    println!("{:?}", recursive_deps);
+
+    return {};
 }
+
+fn check_cache_hit(
+    dep: &str,
+    cache_dir: &str,
+) {}
 
 async fn install_dep_to_cache(
     pollapo_yml: &PollapoYml,
     dep: &str,
-    cache_dir: Option<&str>,
+    cache_dir: &str,
 ) -> std::path::PathBuf {
     let target_hash = &pollapo_yml.root.lock[dep];
     let (user, repo, target_ref) = parse_dep(dep);
 
-    let cache_dir_raw = match cache_dir {
-        Some(dir) => dir,
-        None => "~/.config/pollapo/cache",
-    };
-    let cache_dir = shellexpand::full(cache_dir_raw).unwrap_or_else(|err| {
-        panic!("Failed to resolve {}: {}", cache_dir_raw, err);
+    let cache_dir = shellexpand::full(cache_dir).unwrap_or_else(|err| {
+        panic!("Failed to resolve {}: {}", cache_dir, err);
     });
     let target_cache_dir = format!("{}/{}", cache_dir, user);
     let target_ref_file_path = format!("{}/{}@{}.{}", target_cache_dir, repo, target_ref, "zip");
@@ -152,7 +181,7 @@ mod tests {
     #[serial]
     fn extract_cache_should_extract_from_cache_to_target() {
         // given
-        let pollapo_yml = load_pollapo_yml(Some("pollapo.test.yml"));
+        let pollapo_yml = load_pollapo_yml("pollapo.test.yml");
         let path = tokio_test::block_on(install_dep_to_cache(
             &pollapo_yml,
             "pbkit/interface-pingpong-server@main",
@@ -184,13 +213,13 @@ mod tests {
     #[serial]
     fn install_dep_to_cache_should_store_dep_zip_to_cache() {
         // given
-        let pollapo_yml = load_pollapo_yml(Some("pollapo.test.yml"));
+        let pollapo_yml = load_pollapo_yml("pollapo.test.yml");
 
         // when
         tokio_test::block_on(install_dep_to_cache(
             &pollapo_yml,
             "pbkit/interface-pingpong-server@main",
-            Some("cache_test"),
+            "cache_test",
         ));
 
         // then

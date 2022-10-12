@@ -12,11 +12,7 @@ pub struct PollapoRoot {
     pub lock: BTreeMap<String, String>,
 }
 
-pub fn load_pollapo_yml(pollapo_yml_path: Option<&str>) -> PollapoYml {
-    let pollapo_yml_path = match pollapo_yml_path {
-        Some(path) => path,
-        None => "pollapo.yml",
-    };
+pub fn load_pollapo_yml(pollapo_yml_path: &str) -> PollapoYml {
     let pollapo_yml_content = std::fs::read_to_string(pollapo_yml_path).unwrap_or_else(|err| {
         panic!("Failed to read file {}: {}", pollapo_yml_path, err);
     });
@@ -33,7 +29,7 @@ mod tests {
 
     #[test]
     fn load_pollapo_yml_should_load_root_lock() {
-        let pollapo_yml = load_pollapo_yml(Some("pollapo.test.yml"));
+        let pollapo_yml = load_pollapo_yml("pollapo.test.yml");
         assert_eq!(
             pollapo_yml.root.lock["pbkit/interface-pingpong-server@main"],
             "58425678c6284305dd09130075cecb54a3a3d32c"
@@ -42,7 +38,7 @@ mod tests {
 
     #[test]
     fn load_pollapo_yml_should_load_deps() {
-        let pollapo_yml = load_pollapo_yml(Some("pollapo.test.yml"));
+        let pollapo_yml = load_pollapo_yml("pollapo.test.yml");
         assert_eq!(pollapo_yml.deps[0], "pbkit/interface-pingpong-server@main");
     }
 }
