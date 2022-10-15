@@ -16,7 +16,7 @@ pub struct InstallArgs {
     #[clap(short, long, default_value = ".pollapo")]
     pub outdir: String,
 
-    #[clap(short, long, default_value = "~/.config/pollapo/cache")]
+    #[clap(long, default_value = "~/.config/pollapo/cache")]
     pub cache_dir: String,
 }
 
