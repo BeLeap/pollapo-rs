@@ -12,7 +12,7 @@ async_zip = "0.0.9"
 clap = { version = "4.0.29", features = ["derive"] }
 piz = "0.5.1"
 reqwest = "0.11.13"
-serde = { version = "1.0.149", features = ["derive"] }
+serde = { version = "1.0.150", features = ["derive"] }
 serde_yaml = "0.9.14"
 shellexpand = "3.0.0"
 futures = "0.3.25"
