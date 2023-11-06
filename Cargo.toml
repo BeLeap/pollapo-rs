@@ -13,7 +13,7 @@ clap = { version = "4.4.7", features = ["derive"] }
 piz = "0.5.1"
 reqwest = "0.11.22"
 serde = { version = "1.0.190", features = ["derive"] }
-serde_yaml = "0.9.25"
+serde_yaml = "0.9.27"
 shellexpand = "3.1.0"
 futures = "0.3.29"
 
