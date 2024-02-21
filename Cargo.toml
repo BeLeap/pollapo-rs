@@ -9,7 +9,7 @@ license = "MIT"
 
 [dependencies]
 async_zip = "0.0.16"
-clap = { version = "4.5.0", features = ["derive"] }
+clap = { version = "4.5.1", features = ["derive"] }
 piz = "0.5.1"
 reqwest = "0.11.24"
 serde = { version = "1.0.196", features = ["derive"] }
